@@ -16,3 +16,8 @@ essentially, cd / and then git clone https://github.com/tensorflow/models.git
 9. https://github.com/sofwerx/assault-rifle-detection do this, but instead of the longgun_detection.py, use the person_detection.py
 10. Inside the tf_files folder, create two folders: save_image and save_threat image
 then, you should be able to run the script
+
+
+how to run:
+  `python switch_n_type.py forw 0.5`
+    ### the number is the time in seconds, first arg can be either forw or back
