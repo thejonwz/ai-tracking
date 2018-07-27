@@ -12,8 +12,10 @@ killall -9 python
 
 # train model for tello
 
+######################
 # set up the kill
 ./killTello.sh &
+######################
 
 # launch tello and let it do its thing
 cd /home/nvidia/swx/goStuff/telloGoVideo/
