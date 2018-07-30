@@ -19,7 +19,7 @@ session = tf.Session(config=config)
 
 
 import cv2
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture("vid2.mp4")
 
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
