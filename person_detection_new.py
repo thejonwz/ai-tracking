@@ -23,13 +23,12 @@ session = tf.Session(config=config)
 # processed ones are 'jonathan.m4v' , 'petar.m4v'
 # 'fletcher.m4v' , 'otherDude.m4v' , 'otherDude2.m4v'
 
-videoName = "otherDude2.m4v"
+os.chdir('/tensorflow/models/research/object_detection/')
+
+videoName = "drone_footage_1.mp4"
 
 import cv2
 cap = cv2.VideoCapture(videoName)
-
-os.mkdir('/tf_files/save_threat_image/' + videoName)
-os.mkdir('/tf_files/save_image/' + videoName)
 
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -85,7 +84,6 @@ for file in tar_file.getmembers():
   if 'frozen_inference_graph.pb' in file_name:
 	tar_file.extract(file, os.getcwd())
 '''
-
 # ## Load a (frozen) Tensorflow model into memory.
 
 # In[6]:
@@ -111,33 +109,35 @@ category_index = label_map_util.create_category_index(categories)
 
 # ## Helper code
 
-# In[8]:
-
 def load_image_into_numpy_array(image):
   (im_width, im_height) = image.size
   return np.array(image.getdata()).reshape(
 	  (im_height, im_width, 3)).astype(np.uint8)
 
+# make directories for saving files
+count = 1
+saveDir = '/tf_files/people/'
+dirName = os.path.splitext(videoName)[0] + '_' + str(count)
+dirMade = False
+while dirMade == False:
+	try:
+		os.mkdir(saveDir + 'save_threat_image/' + dirName)
+		os.mkdir(saveDir + 'save_image/' + dirName)
+		dirMade = True
+	except OSError as exc:
+		if count > 10:
+			print(exc)
+			sys.exit("Quitting program because more than 10 directories were found/made.")
+		else:
+			count += 1
+		dirName = videoName + str(count)
+		dirMade == False
 
-# # Detection
 
-# In[9]:
-
-# For the sake of simplicity we will use only 2 images:
-# image1.jpg
-# image2.jpg
-# If you want to test the code with your images, just add path to the images to the TEST_IMAGE_PATHS.
-#PATH_TO_TEST_IMAGES_DIR = 'test_images'
-#TEST_IMAGE_PATHS = [ os.path.join(PATH_TO_TEST_IMAGES_DIR, 'image{}.jpg'.format(i)) for i in range(1, 3) ]
-
-# Size, in inches, of the output images.
-#IMAGE_SIZE = (12, 8)
-
-
-# In[10]:
+# do the detection
 
 frame = 0
-person_count = 1
+person_frame_count = 1
 
 with detection_graph.as_default():
 	with tf.Session(graph=detection_graph) as sess:
@@ -156,9 +156,13 @@ with detection_graph.as_default():
 			classes = detection_graph.get_tensor_by_name('detection_classes:0')
 			num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 			# Actual detection.
-			(boxes, scores, classes, num_detections) = sess.run(
+			try:
+				(boxes, scores, classes, num_detections) = sess.run(
 				[boxes, scores, classes, num_detections],
 				feed_dict={image_tensor: image_np_expanded})
+			except TypeError as exc:
+				print exc
+				sys.exit("Empty frame fed to detection, either the video is over or the connection was lost")
 
 			# Convert tensorflow data to pandas data frams
 			# print boxes
@@ -188,6 +192,7 @@ with detection_graph.as_default():
 ########
 			df6 = df5 #.loc[(df5['classes'] == 1 ) %  (df5['scores'] > person_threshold)]
 
+			maxSavedFrames = 25
 
 			# Scan People in Frame
 			if (df6.empty) or (df6.iloc[0]['scores'] < .80):
@@ -201,12 +206,18 @@ with detection_graph.as_default():
 
 				roi = image_np[y:y + h, x:x + w]
 
-				cv2.imwrite('/tf_files/save_threat_image/' + videoName + "/cap" + "-frame%d.jpg" % person_count, roi)
+				cv2.imwrite(saveDir + 'save_threat_image/' + dirName + "/cap" + "-frame%d.jpg" % person_frame_count, roi)
 				cv2.rectangle(image_np, (x,y), (x+ w, y+ h), (0, 0, 255), 10)
-				cv2.imwrite('/tf_files/save_image/' + videoName + "/cap" +"-frame%d.jpg" % person_count, image_np)
-				person_count = person_count + 1
+				cv2.imwrite(saveDir + 'save_image/' + dirName + "/cap" +"-frame%d.jpg" % person_frame_count, image_np)
+				
+				# only save maxSavedFrames # of frames
+				# writes over frames
+				#if person_frame_count == maxSavedFrames:
+				#	person_frame_count = 1
+				#else:
+				person_frame_count += 1
 
-			#cv2.imshow('object detection', cv2.resize(image_np, (800,600)))
+			cv2.imshow('object detection', cv2.resize(image_np, (800,600)))
 			if cv2.waitKey(25) & 0xFF == ord('q'):
 				cv2.destroyAllWindows()
 				break
