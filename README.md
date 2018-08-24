@@ -26,3 +26,42 @@ then, you should be able to run the script
 how to run:
   `python switch_n_type.py forw 0.5`
     ### the number is the time in seconds, first arg can be either forw or back
+
+
+
+
+# Sofwerx Automated Intrusion Tracking README
+## This README is split into sections in the order they were executed during our project
+## This was implemented on an NVIDIA Jetson TX2 mounted on a vehicle equipped with four brushless DC motors with a wheel attached to each, interfaced with a BLDC motor controller, and a USB camera
+
+
+## Vehicle Setup
+### BLDC Motors
+### TX2
+
+## TX2 Setup
+### Jetpack
+### BLDC Tool
+### Python
+### Download Our Files
+### Tensorflow
+### OpenCV
+### Other Dependencies
+
+## Folder Setup
+### Image Saving Directories
+
+## person_detection_new.py
+### Capturing video
+### Detecting People
+### Saving Images
+
+## Move Vehicle
+### BLDC Tool
+
+## Train Model With Saved Threat Images
+
+## Drone - Go
+### Launch
+### Capture Video
+### Follow Person
