@@ -65,3 +65,81 @@ how to run:
 ### Launch
 ### Capture Video
 ### Follow Person
+
+
+
+
+# README v2
+
+# Sofwerx Automated Intrusion Tracking README
+## This README is split into sections in the order they were executed during our project
+## This was implemented on an NVIDIA Jetson TX2 mounted on a vehicle equipped with four brushless DC motors with a wheel attached to each, interfaced with a BLDC motor controller, and a USB camera
+### This README is detailed with how we did everything using a TX2 running Ubuntu 16.04, which has an ARM-based 64bit CPU and NVIDIA GPU, so if you are running this on something else, the basic setup is the same, just with different OS and architecture details
+
+
+## Vehicle Setup
+### BLDC Motors
+### TX2
+
+## --Nvidia TX2 Board
+### --Jetpack
+With a new TX2, flash it with Jetpack to install basic OS, Cuda, CuDNN, etc.
+### --BLDC Tool
+https://github.com/vedderb/bldc-tool
+Follow that github to download, build, and run the BLDC Tool
+### --Python
+For this, we used Python 2.7. It is recommended that this is set up in a python virtual environment.
+### Download Our Files
+Clone this repo
+### --Tensorflow
+https://www.tensorflow.org/install/ 
+Install Tensorflow for your system. You can either install it directly using pip, or use their tutorial for building Tensorflow for your system, if that is what you want to do.
+`pip install tensorflow-gpu` if you have an NVIDIA GPU that you want to use, or
+`pip install tensorflow` if you don’t have an NVIDIA GPU that you want to use.
+If you build Tensorflow from source, it will take a while ~6 hours, but it should theoretically run faster than it would from just installing it. Also, using the GPU version is theoretically faster than the CPU version.
+### OpenCV
+Install OpenCV for your system. Like Tensorflow, you can either install it directly or build it for your system.
+`pip install opencv-python`
+Or
+https://docs.opencv.org/3.3.1/d7/d9f/tutorial_linux_install.html for building OpenCV
+
+### Other Dependencies
+Numpy, Six, Pandas, Matplotlib, PIL, Pynput (keyboard automation)
+Others may show up if you don’t have them, so pip install as needed
+
+## Folder Setup
+The current person_detection_new.py script requires the Tensorflow models to be downloaded in `/`, as well as a specific set of folders to exist, which requires root access (admin privileges). This can be changed to meet your needs.
+### Tensorflow Models Github
+
+```cd /
+git clone https://github.com/tensorflow/models
+```
+From our repo, person_detection_new.py needs to be copied into `/tensorflow/models/research/object_detection/`
+Lines 79-85 of this script should be uncommented for the first run, in order to download and unzip the Tensorflow model we used for this. After it exists, it should be commented out to speed up the script, since you do not need to re-download and unzip the model files.
+### Image Saving Directories
+The following directory needs to exist:
+`/tf_files/people/`
+
+## person_detection_new.py
+### Capturing video
+Line 31 starts a video capture, which can be either from a video file or from using a camera attached to the system. You need to change what is being passed into cv2.VideoCapture() to meet your needs. In our case, the USB camera was `1`, but if you only have one camera attached, it will probably be `0`. If you want to use a video file, put in the location of the file.
+### Detecting People
+
+### Saving Images
+Line 28 is used for naming the folder in which images are saved, so if you’re using a camera feed, change this to something descriptive.
+There is a block of code that creates new directories for saving images, but it will fail if you have more than 10 folders with the same basic name, so that it does not infinitely create folders. 
+
+## Move Vehicle
+### BLDC Tool
+
+## Train Model With Saved Threat Images
+
+## Drone
+### Install Go
+Download and install the Go language using https://golang.org/doc/install, which will be used to control the drone. `go get` the GoCV and GoBot packages, which includes a driver for interfacing with the Tello drone.
+### Interface with Tello
+Connect the Tello drone to the computer via Wi-Fi. https://gobot.io/blog/2018/04/20/hello-tello-hacking-drones-with-go/ has a tutorial that shows how simple it is to control the Tello using Go code and capture video from the Tello. This video can then be pipelined to a program that detects people, classifies them as the attacker or not, then controls the drone to keep the attacker in the center of the frame or looks around for the attacker.
+
+That’s the general idea of what the drone should do. A similar implementation would be to track faces, which was implemented and showcased [here](https://github.com/sofwerx/docker-tello-facetrack).
+Line 90 of face tracking.go shows that a Caffe model used in detecting faces was implemented. This could be altered such that a Tensorflow model for detecting people, which we have, is used. The only other addition would be to classify the person detected, which could be implemented within the same go file.
+
